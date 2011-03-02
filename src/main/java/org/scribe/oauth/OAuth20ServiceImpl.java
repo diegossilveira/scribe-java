@@ -7,8 +7,11 @@ public class OAuth20ServiceImpl implements OAuthService
 {
   private static final String VERSION = "2.0";
   
+  private static final String NO_SCOPE = null;
+  
   private final DefaultApi20 api;
   private final OAuthConfig config;
+  private String scope;
   
   /**
    * Default constructor
@@ -20,6 +23,7 @@ public class OAuth20ServiceImpl implements OAuthService
   {
     this.api = api;
     this.config = config;
+    this.scope = NO_SCOPE;
   }
 
   /**
@@ -27,7 +31,8 @@ public class OAuth20ServiceImpl implements OAuthService
    */
   public void addScope(String scope)
   {
-    throw new UnsupportedOperationException("OAuth 2 does not use scopes");
+	  // reference: http://developers.facebook.com/docs/authentication/permissions/
+	  this.scope = scope;
   }
 
   /**
@@ -36,6 +41,7 @@ public class OAuth20ServiceImpl implements OAuthService
   public Token getAccessToken(Token requestToken, Verifier verifier)
   {
     OAuthRequest request = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
+    request.addQuerystringParameter(OAuthConstants.GRANT_TYPE, "authorization_code");
     request.addQuerystringParameter(OAuthConstants.CLIENT_ID, config.getApiKey());
     request.addQuerystringParameter(OAuthConstants.CLIENT_SECRET, config.getApiSecret());
     request.addQuerystringParameter(OAuthConstants.CODE, verifier.getValue());
@@ -73,7 +79,15 @@ public class OAuth20ServiceImpl implements OAuthService
    */
   public String getAuthorizationUrl(Token requestToken)
   {
-    return api.getAuthorizationUrl(config);
+    String url = api.getAuthorizationUrl(config);
+    
+    // add some query string
+    url += ("&" + OAuthConstants.RESPONSE_TYPE + "=" + "code");
+    
+    if(scope != NO_SCOPE) {
+    	url += ("&" + OAuthConstants.SCOPE + "=" + scope);
+    }
+    return url;
   }
 
 }

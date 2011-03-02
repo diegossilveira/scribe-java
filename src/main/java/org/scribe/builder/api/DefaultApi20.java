@@ -64,7 +64,9 @@ public abstract class DefaultApi20 implements Api
    */
   public OAuthService createService(OAuthConfig config, String scope)
   {
-    return new OAuth20ServiceImpl(this, config);
+    OAuthService service = new OAuth20ServiceImpl(this, config);
+    service.addScope(scope);
+    return service;
   }
 
 }
